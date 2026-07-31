@@ -5,9 +5,10 @@ Codified GitHub repo settings that complete the **Stage 0** foundation:
 These are GitHub‑side settings and require a **remote repository** plus **admin** rights, applied by
 running the script below (or the equivalent `gh` calls).
 
-> **Applied to:** [`naytron/afc-demo`](https://github.com/naytron/afc-demo) (private).
-> Branch protection on `main` and the `dev`/`prod` environments are live. Two items depend on the
-> billing plan / account type — see **[Plan limitations](#4-plan-limitations-current-repo)** below.
+> **Applied to:** [`naytron/afc-demo`](https://github.com/naytron/afc-demo) (**public**).
+> Branch protection on `main`, the `dev`/`prod` environments, and the `prod` **required‑reviewer**
+> approval gate are all live. One item remains account‑type dependent — see
+> **[Plan limitations](#4-plan-limitations-current-repo)** below.
 > Nothing here changes application behavior — it only hardens the repo and prepares environments
 > used from Stage 2 onward.
 
@@ -97,17 +98,20 @@ gh api -X POST "orgs/$ORG/actions/runner-groups" -f name="afc-runners" -f visibi
 
 ## 4. Plan limitations (current repo)
 
-`naytron/afc-demo` is a **private repo on a personal (Pro) account**. Two Stage 0 items depend on the
-account type and are **deferred**, not applied:
+`naytron/afc-demo` is a **public repo on a personal (Pro) account**. Making it public unlocked the
+`prod` **required‑reviewer** gate and environment branch policy (these are rejected with HTTP 422 on
+*private* personal repos). One item remains account‑type dependent:
 
 | Item | Why it's blocked | How to enable |
 | --- | --- | --- |
-| `prod` **required‑reviewer** approval gate (and branch policy) | Environment **protection rules** on private repos require a **public** repo or a **Team/Enterprise org** (personal Pro creates the environment but rejects the rule with HTTP 422). | Make the repo **public** (`gh repo edit naytron/afc-demo --visibility public --accept-visibility-change-consequences`) **or** move it to a Team/Enterprise org, then re‑run the script. |
 | `afc-runners` **runner group** | Runner groups are an **organization‑only** feature. | Move the repo into an org (with `admin:org`), then re‑run the script. |
 
-The script degrades gracefully: it creates a **bare `prod` environment** when protection rules are
-rejected, and **skips** the runner group on non‑org owners — so re‑running after moving to public/an org
+The script degrades gracefully: it **skips** the runner group on non‑org owners and falls back to a
+**bare `prod` environment** if protection rules are ever rejected — so re‑running after moving to an org
 is safe and idempotent.
+
+> If this repo must stay **private**, the `prod` protection rules require a **Team/Enterprise org**
+> (personal Pro creates the environment but rejects the rule with HTTP 422).
 
 ---
 
@@ -116,7 +120,7 @@ is safe and idempotent.
 - [x] `docs-lint` passes (run `npx markdownlint-cli2` locally; enforced by CI on PRs).
 - [x] Repo structure matches [README.md](../README.md) layout.
 - [x] `CODEOWNERS` in place; branch protection requires review.
-- [x] `dev` and `prod` environments created. *(`prod` reviewer gate deferred — see §4.)*
+- [x] `dev` and `prod` environments created; `prod` has required reviewers.
 - [ ] `afc-runners` runner group created and scoped to the repo. *(org‑only — see §4.)*
 - [ ] Reviewers sign off on the spec.
 

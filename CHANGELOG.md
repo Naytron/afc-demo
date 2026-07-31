@@ -17,9 +17,9 @@ All notable changes to this project are documented here. The format is based on
 - **Repo settings as code:** [scripts/setup-github.ps1](./scripts/setup-github.ps1) and
   [docs/REPO_SETUP.md](./docs/REPO_SETUP.md) to apply branch protection, `dev`/`prod` environments, and
   the `afc-runners` runner group.
-- **Published to GitHub:** created [`naytron/afc-demo`](https://github.com/naytron/afc-demo) (private)
-  and applied branch protection on `main` plus the `dev`/`prod` environments. The `prod` reviewer gate
-  and `afc-runners` runner group are deferred pending a public repo or a Team/Enterprise org.
+- **Published to GitHub:** created [`naytron/afc-demo`](https://github.com/naytron/afc-demo) (**public**)
+  and applied branch protection on `main`, the `dev`/`prod` environments, and the `prod`
+  required‑reviewer approval gate + branch policy. The `afc-runners` runner group is deferred (org‑only).
 - Initialized the git repository and added a .NET/OS `.gitignore`.
 
 ### Changed
