@@ -13,6 +13,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ## 1. Identity & access
 
 ### End users
+
 - **Azure AD B2C** provides sign‑up / sign‑in with social identity providers: **Google, Apple, X**.
 - Anonymous users can always use the default **Trophy** screen; account‑only features require a valid
   B2C token.
@@ -20,22 +21,26 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
   audience, expiry, signature).
 
 ### Service‑to‑service
+
 - **Managed identities** for every Azure service interaction (Cosmos, App Config, Key Vault, Event
   Hubs, AI Search, Foundry). **No connection strings or keys in code or pipelines.**
 - **Least‑privilege RBAC**: scoped data‑plane roles (e.g., Cosmos DB Built‑in Data Contributor,
   Key Vault Secrets User) per identity, per environment.
 
 ### Administrators
+
 - Admin portal (Stage 8) is gated by an **admin app role**/group and fronted by **API Management**;
   privileged operations are audited.
 
 ### CI/CD
+
 - GitHub → Azure uses **workload identity federation (OIDC)** — no stored cloud credentials.
 - Deployments to `afc-prod` require the protected **prod environment** with required reviewers.
 
 ---
 
 ## 2. Secrets & configuration
+
 - **Key Vault** (`afc-kv-<env>`) stores secrets (e.g., API-Football key, push credentials).
 - **App Configuration** (`afc-appconfig-<env>`) stores non‑secret config + **feature flags**;
   secret references point at Key Vault.
@@ -46,6 +51,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ---
 
 ## 3. Network & gateway
+
 - **API Management** (Stage 8) enforces product keys, rate limiting, IP/JWT validation, and payload
   policies for all callable APIs.
 - Container Apps use **ingress restrictions**; internal services are not publicly exposed.
@@ -54,6 +60,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ---
 
 ## 4. Data protection & privacy
+
 - **Encryption in transit** (TLS) and **at rest** (platform‑managed keys; CMK optional).
 - Cosmos DB partitioned by non‑PII keys where possible; user PII limited to what B2C provides + opt‑in
   flags.
@@ -66,6 +73,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ---
 
 ## 5. AI‑specific security (WAF for AI)
+
 - **Model/version pinning** in Foundry; changes tracked via ADR/CHANGELOG.
 - **Grounding**: transfer‑news and search answers are grounded in retrieved content (AI Search) with
   **confidence scoring**.
@@ -90,6 +98,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ---
 
 ## 7. Secure SDLC
+
 - Branch protection + required reviews on `main`; signed commits encouraged.
 - **CodeQL** / dependency review + **Dependabot** on PRs.
 - **Container image scanning** in ACR; base images pinned and regularly updated.
@@ -99,6 +108,7 @@ Well‑Architected Framework and the WAF‑for‑AI guidance. Security controls 
 ---
 
 ## 8. Reporting a vulnerability
+
 This is a demo repository. For real deployments, report suspected vulnerabilities privately to the
 repository owners (e.g., via a GitHub **private security advisory**) and **do not** open a public
 issue. Provide reproduction steps and impact; expect acknowledgement and a remediation timeline in the

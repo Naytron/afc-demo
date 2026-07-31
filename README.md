@@ -63,6 +63,7 @@ All features are hidden behind **feature flags** except the two default‑ON fea
 ## Technology stack
 
 **App & runtime**
+
 - **C#** / .NET, **.NET Aspire** for local orchestration and service composition
 - **Blazor WebAssembly PWA** frontend on **Azure Static Web Apps** (installable, responsive; native
   iOS deferred — see [ROADMAP.md](./ROADMAP.md))
@@ -70,6 +71,7 @@ All features are hidden behind **feature flags** except the two default‑ON fea
   / stateful services) — containers where they make sense
 
 **Data & integration**
+
 - **Azure Cosmos DB** (user profiles, ratings, aggregated content)
 - **Azure Event Hubs** (fixture/lineup event stream)
 - **Azure API Management** (API gateway, governance, rate limiting) — introduced Stage 8
@@ -77,10 +79,12 @@ All features are hidden behind **feature flags** except the two default‑ON fea
   **API-Football**, see the [ADR](./docs/ADR/0001-football-data-provider.md))
 
 **AI**
+
 - **Microsoft Foundry** (model hosting/inference) + **Semantic Kernel** (agents, skills/functions)
 - **Azure AI Search** (retrieval)
 
 **Platform & delivery**
+
 - **Azure AI Well‑Architected Framework** alignment across all 5 pillars
 - **3 subscriptions**: `platform`, `dev`, `prod`; single US region to start (**East US 2** suggested)
 - **Feature flags** via Azure App Configuration + `Microsoft.FeatureManagement`
@@ -104,17 +108,23 @@ afc-demo/
 ├─ README.md                 ├─ ARCHITECTURE.md        ├─ SECURITY.md
 ├─ ROADMAP.md                ├─ SETUP.md               ├─ CHANGELOG.md
 ├─ DELIVERY_PLAN.md          ├─ AGENTS.md              ├─ .gitignore
+├─ .markdownlint-cli2.jsonc  # docs lint config (Stage 0 gate)
 ├─ .github/
 │  ├─ PULL_REQUEST_TEMPLATE.md
-│  └─ workflows/             # CI / CD / manual / e2e (skeletons — see docs/CI_CD.md)
+│  ├─ CODEOWNERS
+│  └─ workflows/             # docs-lint now; CI / CD / manual / e2e added per stage
+├─ scripts/
+│  └─ setup-github.ps1       # applies branch protection, environments, runner group
 └─ docs/
    ├─ EXECUTION_PLAYBOOK.md  # per‑stage build loop + test gates
    ├─ STAGE_PROMPTS.md       # kickoff prompt per stage (2–9)
    ├─ BOOTSTRAP_PROMPT.md    # Stage 1 kickoff prompt
+   ├─ REPO_SETUP.md          # Stage 0 GitHub repo settings (branch protection, envs, runners)
    ├─ CI_CD.md
-   ├─ diagrams/
    └─ ADR/0001-football-data-provider.md
 ```
+
+> Architecture diagrams are authored inline as **Mermaid** in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Naming conventions
 

@@ -5,6 +5,7 @@ introduced at **Stage 2** (first cloud deploy). This file documents the approach
 starting‑point YAML; live workflow files land under `.github/workflows/` when app code exists.
 
 > **Security baseline for every workflow**
+>
 > - **Pin every `uses:` to a full‑length commit SHA** with a version comment; **Dependabot** keeps
 >   them current. Never use `@main`/`@latest`/major‑tag references.
 > - **Least‑privilege `permissions:`** at workflow level (default `contents: read`); grant
@@ -16,6 +17,7 @@ starting‑point YAML; live workflow files land under `.github/workflows/` when 
 ---
 
 ## 1. Environments & runner groups
+
 - **GitHub Environments:** `dev` (auto‑deploy from `main`) and `prod` (required reviewers,
   branch = `main`, wait timer optional).
 - **Runner group `afc-runners`:** self‑hosted runners in `afc-platform` for jobs needing private
@@ -40,6 +42,7 @@ starting‑point YAML; live workflow files land under `.github/workflows/` when 
 ## 3. Skeletons
 
 ### `ci.yml`
+
 ```yaml
 name: ci
 on:
@@ -75,6 +78,7 @@ jobs:
 ```
 
 ### `e2e.yml`
+
 ```yaml
 name: e2e
 on:
@@ -112,6 +116,7 @@ jobs:
 ```
 
 ### `cd-dev.yml` (OIDC to Azure)
+
 ```yaml
 name: cd-dev
 on:
@@ -149,6 +154,7 @@ jobs:
 ```
 
 ### `cd-prod.yml` (manual/approved)
+
 ```yaml
 name: cd-prod
 on:
@@ -181,6 +187,7 @@ jobs:
 ```
 
 ### `manual-test.yml` (manual test harness)
+
 ```yaml
 name: manual-test
 on:
@@ -213,11 +220,13 @@ jobs:
 ---
 
 ## 4. Deployment flow
+
 See [ARCHITECTURE.md](../ARCHITECTURE.md#5-cicd-flow): PR → CI → preview → e2e → merge → `dev` →
 manual approval → `prod`. Each stage from [DELIVERY_PLAN.md](../DELIVERY_PLAN.md) extends these
 workflows (e.g., Stage 4 adds Event Hubs infra, Stage 8 adds APIM) without breaking the baseline.
 
 ## 5. Agentic GitHub features
+
 - **Copilot coding agent** for routine PRs (dependency bumps, small fixes, doc updates) with required
   human review before merge.
 - **Transfer‑news editorial pattern (Stage 6):** the Transfer News agent may open a **draft PR / issue**
@@ -228,6 +237,7 @@ workflows (e.g., Stage 4 adds Event Hubs infra, Stage 8 adds APIM) without break
   history.
 
 ## 6. Runner group setup (summary)
+
 1. Create runner group `afc-runners` (org‑level), restrict to `afc-demo` and protected branches.
 2. Register self‑hosted runners in `afc-platform` (labels: `self-hosted`, `afc`, `linux`).
 3. Use GitHub‑hosted runners for build/test/e2e; self‑hosted only for network‑restricted deploy steps.

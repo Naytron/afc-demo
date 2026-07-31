@@ -1,0 +1,14 @@
+{
+  // Markdown lint config for AFC Demo docs (Stage 0 exit gate).
+  // Tuned for long-form prose + Mermaid; run locally with: npx markdownlint-cli2
+  "config": {
+    "default": true,
+    "MD013": false,               // line length: prose docs wrap naturally
+    "MD033": false,               // inline HTML: <br/> used inside Mermaid labels
+    "MD041": false,               // first-line heading: README opens with an HTML comment
+    "MD036": false,               // bold labels before lists/tables are an intentional doc style
+    "MD024": { "siblings_only": true } // duplicate headings ok under different parents (CHANGELOG)
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["node_modules", ".git", "**/bin/**", "**/obj/**"]
+}

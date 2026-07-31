@@ -6,6 +6,7 @@
 - **Related:** [ARCHITECTURE.md](../../ARCHITECTURE.md), [DELIVERY_PLAN.md](../../DELIVERY_PLAN.md)
 
 ## Context
+
 The app needs football data: competitions, fixtures, standings (Trophy screen), plus **lineups**
 (lineup notifications), **per‑player match statistics** (player ratings), and **transfer** signals.
 Two candidates were evaluated as starting assumptions:
@@ -30,6 +31,7 @@ tier. The **lineup notification**, **player ratings**, and **transfer news** fea
 free tier does not provide.
 
 ## Decision
+
 1. **Introduce an abstraction** `IFootballDataProvider` (surfaced to agents via `FootballDataPlugin`)
    with a stable domain model (`Fixture`, `Standing`, `Lineup`, `MatchStats`).
 2. **Stages 1–2:** implement with **football-data.org (free tier)** for fixtures/standings, plus a
@@ -39,12 +41,14 @@ free tier does not provide.
    consumers).
 
 ## Rationale
+
 - Keeps demo **cost near zero** through the first cloud milestone.
 - Avoids **vendor lock‑in**; the swap is a configuration change behind one interface.
 - Aligns provider capability with the **stage that needs it**, matching the just‑in‑time infra
   principle and keeping each stage testable.
 
 ## Consequences
+
 - **Positive:** low starting cost; clean seam for testing (mock), caching, and rate‑limit handling;
   agents/API share one integration.
 - **Negative / trade‑offs:** two client implementations to maintain; domain model must reconcile
@@ -54,6 +58,7 @@ free tier does not provide.
   monitor provider errors and fall back gracefully (feature flags can disable dependent features).
 
 ## Alternatives considered
+
 - **API-Football from day one:** richer data immediately, but adds cost before it's needed and
   complicates the free local‑first experience.
 - **football-data.org only:** cheapest, but cannot support lineups/ratings/transfers — a hard blocker

@@ -7,6 +7,7 @@ always available.
 ---
 
 ## Guiding principles
+
 - **Testable baseline every stage** — never break the running Trophy screen.
 - **Introduce infra just‑in‑time** — a service appears only when a feature needs it.
 - **Flags over branches** — features merge early, hidden behind flags, and roll out via targeting.
@@ -55,17 +56,20 @@ gantt
 ---
 
 ## Near‑term (MVP: Stages 1–4)
+
 - Trophy/standings home + competition detail screens.
 - Deploy to Azure with full CI/CD, previews, and e2e.
 - B2C social login and account opt‑ins.
 - Live lineup notifications (upgrade to API-Football).
 
 ## Mid‑term (Stages 5–7)
+
 - AI player ratings (Foundry + Semantic Kernel) + user ratings.
 - Daily AI transfer‑news agent.
 - AI Search across results/players/ratings/stats.
 
 ## Longer‑term (Stage 8+ / Future)
+
 - API Management governance + backend admin portal.
 - **Premium account tier** unlocking additional features.
 - **Native iOS app** (evaluate .NET MAUI vs Swift) with **APNs** push, replacing web‑push where
@@ -76,6 +80,7 @@ gantt
 ---
 
 ## Explicitly deferred (documented, not in MVP)
+
 - Native mobile apps (iOS first) — **deferred**; responsive PWA ships first.
 - Multi‑region / DR — single US region (East US 2) to start.
 - CMK encryption, Front Door/edge WAF — noted as future hardening.

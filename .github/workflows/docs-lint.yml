@@ -1,0 +1,37 @@
+name: docs-lint
+
+# Stage 0 gate: markdown must lint clean. This workflow has no application dependency,
+# so it is valid from Stage 0 onward (app build/test arrives in ci.yml at Stage 1).
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '.markdownlint-cli2.jsonc'
+      - '.github/workflows/docs-lint.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**/*.md'
+      - '.markdownlint-cli2.jsonc'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdownlint:
+    name: docs-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Setup Node
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 20
+      - name: Lint markdown
+        run: npx --yes markdownlint-cli2

@@ -13,6 +13,7 @@ shape, not final code.
 ---
 
 ## Conventions
+
 - **Plugin** = a Semantic Kernel plugin (a group of related functions/skills).
 - **Function** = a single `KernelFunction` (native C# or prompt function).
 - Every agent: pins a **model/version**, logs prompts/outputs (PII‑filtered), scores **confidence**,
@@ -102,6 +103,7 @@ generated claim (no ungrounded assertions).
 ---
 
 ## Shared plugin — `FootballDataPlugin`
+
 Wraps `IFootballDataProvider` so agents and the Core API share one integration and one place to swap
 providers (football-data.org ↔ API-Football).
 
@@ -115,12 +117,14 @@ providers (football-data.org ↔ API-Football).
 ---
 
 ## Model & configuration
+
 - **Foundry deployment** per environment; model IDs/versions pinned in config and recorded in
   [CHANGELOG.md](./CHANGELOG.md).
 - Temperature low for ratings/summaries (factual); retrieval‑augmented for search.
 - Token/cost budgets enforced; failures degrade gracefully (feature flag can disable an agent).
 
 ## Observability & evaluation
+
 - All agent runs emit traces to App Insights (latency, tokens, confidence, outcome).
 - Offline **evaluation sets** (golden fixtures/queries) validate rating rubric stability and search
   relevance before flag rollout.

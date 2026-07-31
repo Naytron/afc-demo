@@ -35,6 +35,7 @@ The Aspire dashboard shows the composed resources (web PWA, Core API, optional C
 the web endpoint it prints to view the **Trophy** home screen.
 
 ### Configuration & secrets (local)
+
 - Non‑secret config + feature flags: local `appsettings.Development.json` / JSON flag fallback
   (`trophy-screen` and `lineup-notification` ON).
 - Secrets: **user‑secrets** (`dotnet user-secrets`) — never commit real keys.
@@ -42,6 +43,7 @@ the web endpoint it prints to view the **Trophy** home screen.
   otherwise the mock provider is used.
 
 ### Tests
+
 ```bash
 dotnet test                       # unit + component
 npx playwright test               # e2e (against the local Aspire run or a preview URL)
@@ -77,6 +79,7 @@ az deployment sub create \
 ```
 
 ### One‑time platform setup
+
 1. Create subscriptions/resource groups: `rg-afc-dev`, `rg-afc-prod`, platform RG.
 2. Create **ACR** (`afcacrplatform`) and central Log Analytics in `afc-platform`.
 3. Configure **GitHub OIDC federation** (app registrations / federated credentials) for `dev` and
@@ -85,6 +88,7 @@ az deployment sub create \
    (see [docs/CI_CD.md](./docs/CI_CD.md)).
 
 ### Per‑stage additions
+
 - Stage 3: provision **Azure AD B2C** tenant + user flows + social IdP app registrations
   (Google, Apple, X).
 - Stage 4: **Event Hubs** + switch provider secret to **API-Football**.
@@ -94,6 +98,7 @@ az deployment sub create \
 ---
 
 ## 5. Feature flags
+
 Flags live in **Azure App Configuration** (`afc-appconfig-<env>`) and are changed **without a
 redeploy**. Local development falls back to JSON flags so the app runs offline. See
 [ARCHITECTURE.md](./ARCHITECTURE.md#6-featureflag-strategy).
@@ -101,6 +106,7 @@ redeploy**. Local development falls back to JSON flags so the app runs offline. 
 ---
 
 ## 6. Troubleshooting
+
 - **Aspire won't start containers** → ensure Docker Desktop is running.
 - **401 from API locally** → B2C not needed for the Trophy screen; only account features require a
   token (Stage 3+).

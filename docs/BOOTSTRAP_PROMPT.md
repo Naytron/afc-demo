@@ -12,6 +12,7 @@ or later‑stage features — those are separate stages.
 ---
 
 ## Guardrails for the agent
+
 - **Scope = Stage 1 only.** No Azure resources, no auth, no AI, no Event Hubs, no APIM. Those arrive in
   later stages per [DELIVERY_PLAN.md](../DELIVERY_PLAN.md).
 - **Must run locally with no secrets** via a **mock provider**; a football-data.org provider is added
@@ -33,6 +34,7 @@ or later‑stage features — those are separate stages.
 > messaging, or API Management — those are later stages.
 >
 > **Tech & structure**
+>
 > - Language: **C#**, targeting the latest **.NET LTS**.
 > - Frontend: **Blazor WebAssembly PWA** (installable, responsive; mobile‑first). Project `afc-web`.
 > - Backend: a **minimal Core API** (`afc-api`) exposing trophy/standings endpoints.
@@ -42,6 +44,7 @@ or later‑stage features — those are separate stages.
 >   `.editorconfig`, `.gitignore` (.NET), and a `Directory.Build.props` for shared settings.
 >
 > **Features (Stage 1)**
+>
 > 1. **Trophy standing screen (home page):**
 >    - Shows the **next Arsenal fixture**, or the **current/live fixture if it is a gameday**.
 >    - Shows **Arsenal's standing in each competition** they are in (Premier League, Champions League,
@@ -55,6 +58,7 @@ or later‑stage features — those are separate stages.
 >    "coming in Stage 3" state. Do **not** integrate Azure AD B2C yet.
 >
 > **Data access**
+>
 > - Define `IFootballDataProvider` with methods `GetFixtures`, `GetStandings` (and stubs for
 >   `GetLineups`, `GetMatchStats` that throw `NotSupportedException` for now).
 > - Provide **two implementations**: (a) a **MockFootballDataProvider** returning realistic sample data
@@ -64,11 +68,13 @@ or later‑stage features — those are separate stages.
 >   `Competition`).
 >
 > **Feature flags**
+>
 > - Integrate `Microsoft.FeatureManagement` with a **local JSON fallback**. Register flags
 >   `trophy-screen` (ON), `lineup-notification` (ON), and placeholders `player-ratings`,
 >   `transfer-news`, `search`, `premium-tier` (OFF). Gate the (stub) lineup‑notification UI on its flag.
 >
 > **Testing**
+>
 > - **Unit tests** for providers and standings/fixture logic (including greyscale/eliminated logic and
 >   gameday selection).
 > - **Component tests** (bUnit) for the trophy home and competition detail components.
@@ -77,16 +83,19 @@ or later‑stage features — those are separate stages.
 > - Make tests runnable via `dotnet test` and `npx playwright test` against the Aspire run.
 >
 > **CI**
+>
 > - Add a `.github/workflows/ci.yml` matching `docs/CI_CD.md` (build + unit/component + lint; pin
 >   actions to commit SHAs; least‑privilege `permissions: contents: read`; `concurrency`). Do **not**
 >   add deploy workflows yet.
 >
 > **Docs**
+>
 > - Update `README.md` quickstart if commands differ, and add a Stage 1 entry to `CHANGELOG.md`.
 > - Do **not** modify `ARCHITECTURE.md`, `DELIVERY_PLAN.md`, `SECURITY.md`, or `ROADMAP.md` except to
 >   fix factual drift.
 >
 > **Definition of done (Stage 1)**
+>
 > - `dotnet run --project ./src/afc-apphost` serves the site; home shows the next/live fixture and four
 >   trophies with correct greyscale/clickthrough.
 > - All unit/component/e2e tests pass locally and in `ci.yml`.
@@ -99,6 +108,7 @@ or later‑stage features — those are separate stages.
 ---
 
 ## After Stage 1
+
 Proceed stage‑by‑stage using [DELIVERY_PLAN.md](../DELIVERY_PLAN.md). Each subsequent stage has its own
 scope, exit criteria, and (later) its own follow‑on prompt. Suggested next prompt (Stage 2) theme:
 *"Add Bicep IaC, App Configuration, and the `cd-dev`/`cd-prod`/`e2e`/`manual-test` workflows from

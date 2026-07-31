@@ -44,15 +44,23 @@ timeline
 ## Per‑stage checklists
 
 ### Stage 0 — Spec & foundation
+
 - ✅ Documentation package (README, ARCHITECTURE, SECURITY, ROADMAP, SETUP, CHANGELOG, this plan, AGENTS)
 - ✅ Architecture diagrams (Mermaid)
 - ✅ PR template + CI/CD strategy + workflow skeletons
 - ✅ ADR‑0001 (football data provider)
-- ✅ Bootstrap prompt
-- ☐ Repo settings: branch protection, environments (`dev`, `prod`), runner group `afc-runners`
+- ✅ Bootstrap prompt + execution playbook + per‑stage prompts
+- ✅ Markdown lint config + `docs-lint` CI workflow; **markdown lint passes** (0 issues)
+- ✅ `CODEOWNERS` (reviewer sign‑off gate)
+- ✅ Repo structure matches README
+- ✅ Repo settings **codified** as `scripts/setup-github.ps1` + [docs/REPO_SETUP.md](./docs/REPO_SETUP.md):
+  branch protection, environments (`dev`, `prod`), runner group `afc-runners`
+- ☐ Repo settings **applied** — requires a GitHub remote + admin; run `scripts/setup-github.ps1` once the
+  target `owner/repo` exists (see [docs/REPO_SETUP.md](./docs/REPO_SETUP.md))
 - **Exit:** markdown lint passes; repo structure matches README; reviewers sign off on the spec.
 
 ### Stage 1 — Local simple site
+
 - ☐ .NET Aspire AppHost orchestrating Web (Blazor WASM PWA) + minimal Core API
 - ☐ Trophy/standings **home screen**: next/live fixture + standing per competition
 - ☐ Clickable trophy → competition detail (standings/stats) screen
@@ -69,6 +77,7 @@ timeline
 | afc-apphost (Aspire) | net (latest LTS) | ☐ | ☐ | ☐ | n/a | Local orchestration |
 
 ### Stage 2 — Deploy simple site to Azure
+
 - ☐ Bicep IaC for `rg-afc-dev` (SWA, Container App API, App Config, App Insights, ACR use)
 - ☐ GitHub OIDC federation to `afc-dev` and `afc-prod`
 - ☐ Workflows: `ci.yml`, `cd-dev.yml`, `cd-prod.yml` (approval), `e2e.yml`, `manual-test.yml`
@@ -84,6 +93,7 @@ timeline
 | afc-appconfig | App Config | ☐ | ☐ | ☐ | ☐ | flags |
 
 ### Stage 3 — Accounts & auth
+
 - ☐ Azure AD B2C tenant + user flows; social IdPs: **Google, Apple, X**
 - ☐ Sign up / sign in from the home screen (single simple screen)
 - ☐ Cosmos DB `users` container; profile + `lineupOptIn`
@@ -92,6 +102,7 @@ timeline
 - **Exit:** a user can create/sign in via each social IdP and their opt‑in persists.
 
 ### Stage 4 — Lineup notifications (default ON)
+
 - ☐ Switch provider to **API-Football** (lineups) behind the abstraction
 - ☐ Timer ingestion Function → Event Hubs (`fixture`/`lineup` events)
 - ☐ Core API projects events to Cosmos; triggers push to opted‑in users
@@ -100,6 +111,7 @@ timeline
 - **Exit:** posting a lineup event notifies opted‑in accounts; trophy screen still green.
 
 ### Stage 5 — Player ratings (flagged)
+
 - ☐ Ratings Function using **Semantic Kernel** + **Foundry** to estimate ratings from match stats
 - ☐ User rating submission stored in Cosmos `ratings`
 - ☐ Blend/display AI + user ratings; guardrails + human‑in‑the‑loop note
@@ -107,6 +119,7 @@ timeline
 - **Exit:** post‑match AI ratings generated and users can rate; disabled cleanly when flag off.
 
 ### Stage 6 — Transfer news (flagged)
+
 - ☐ Daily scheduled agent Function (Semantic Kernel) aggregates Arsenal transfer rumours/news
 - ☐ Store `transfers` in Cosmos with source + confidence; dedupe
 - ☐ Optional agentic GitHub pattern for content review PRs (see docs/CI_CD.md)
@@ -114,18 +127,21 @@ timeline
 - **Exit:** daily run produces reviewed transfer items surfaced in the app when flag on.
 
 ### Stage 7 — Search (flagged)
+
 - ☐ Azure AI Search index over fixtures/results/ratings/stats projected from Cosmos
 - ☐ Search API + UI; relevance tuning; grounding for AI answers
 - ☐ Feature flag `search`
 - **Exit:** users can search results/players/ratings/stats with relevant hits.
 
 ### Stage 8 — Governance & admin
+
 - ☐ **API Management** in front of Core API (products, keys, rate limits, policies)
 - ☐ **Admin portal** (Container App) for content/data edits (CRUD) with admin RBAC
 - ☐ Key Vault hardening, WAF security review, cost review, alerting/dashboards
 - **Exit:** all clients call via APIM; admins manage data; WAF review actioned.
 
 ### Stage 9 — Mobile polish
+
 - ☐ PWA install/offline/responsive hardening across iOS Safari
 - ☐ Document native iOS plan (MAUI vs Swift) + APNs push migration
 - **Exit:** installable, responsive experience validated on iOS; native path documented.
@@ -133,10 +149,12 @@ timeline
 ---
 
 ## Definition of Done (every stage)
+
 1. Builds green in CI. 2. Unit/component + e2e green. 3. Deployed (Stage 2+) and smoke‑tested.
-4. Feature flags behave (on/off). 5. Docs + CHANGELOG updated. 6. WAF quick‑check for new assets.
+2. Feature flags behave (on/off). 5. Docs + CHANGELOG updated. 6. WAF quick‑check for new assets.
 
 ## Risks & mitigations
+
 | Risk | Mitigation |
 | --- | --- |
 | Free data tier lacks lineups/stats | Provider abstraction; upgrade to API-Football at Stage 4 (planned). |

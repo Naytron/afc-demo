@@ -1,0 +1,18 @@
+# CODEOWNERS — required reviewers for AFC Demo.
+# Satisfies the Stage 0 exit criterion: "reviewers sign off on the spec".
+#
+# Replace the placeholder owner below with a real GitHub team (e.g. @your-org/afc-maintainers)
+# or one or more usernames (e.g. @nlangston). Owners are auto-requested for review on matching
+# changes; pair this with branch protection (see docs/REPO_SETUP.md) to make review mandatory.
+
+# Default owner for everything in the repo
+*                                   @your-org/afc-maintainers
+
+# Specification & delivery docs
+/*.md                               @your-org/afc-maintainers
+/docs/                              @your-org/afc-maintainers
+
+# CI/CD, infra, and repo automation
+/.github/                           @your-org/afc-maintainers
+/scripts/                           @your-org/afc-maintainers
+/infra/                             @your-org/afc-maintainers

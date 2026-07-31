@@ -31,6 +31,7 @@ Configuration, App Insights, ACR, Bicep, and the deploy workflows.
 > `SETUP.md`.
 >
 > **Scope**
+>
 > - **Bicep IaC** under `infra/` provisioning per environment: Azure **Static Web Apps** (`afc-web`),
 >   **Container App** for `afc-api` (+ its Container Apps environment), **App Configuration**
 >   (feature flags), **Application Insights**/Log Analytics, and use of the shared **ACR** in
@@ -48,6 +49,7 @@ Configuration, App Insights, ACR, Bicep, and the deploy workflows.
 > **Do not** add auth, Cosmos, AI, Event Hubs, or APIM. No new user‑facing features.
 >
 > **Tests / DoD**
+>
 > - Merge to `main` deploys to `afc-dev`; a tagged release deploys to `afc-prod` after approval.
 > - Deployed **smoke + e2e** are green; flags read from App Config; rollback (revert PR / redeploy prior
 >   image) is documented in the PR.
@@ -63,6 +65,7 @@ Configuration, App Insights, ACR, Bicep, and the deploy workflows.
 > (identity) and `ARCHITECTURE.md` (data model).
 >
 > **Scope**
+>
 > - **Azure AD B2C** tenant + user flows (sign‑up/sign‑in, profile edit, password reset) with social
 >   IdPs **Google, Apple, X**. Provision via Bicep/config; store secrets in **Key Vault**.
 > - Make the Stage 1 sign‑in affordance **real**: sign up / sign in from the **home screen** (single
@@ -75,6 +78,7 @@ Configuration, App Insights, ACR, Bicep, and the deploy workflows.
 > **Do not** build notifications, AI, search, or APIM.
 >
 > **Tests / DoD**
+>
 > - Integration tests with the Cosmos emulator; e2e covering **anonymous** and **authenticated** paths
 >   for each social IdP; opt‑in persists.
 > - Meets [DELIVERY_PLAN Stage 3](../DELIVERY_PLAN.md#stage-3--accounts--auth) exit criteria.
@@ -90,6 +94,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > posted.** Read `docs/ADR/0001-football-data-provider.md` and `ARCHITECTURE.md`.
 >
 > **Scope**
+>
 > - Add a **FootballApiProvider** (API-Football) implementing `GetLineups`/`GetMatchStats` behind the
 >   existing `IFootballDataProvider`; select by config. Keep the mock/football-data.org providers for
 >   local/no‑secret runs.
@@ -102,6 +107,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > **Do not** build ratings, news, search, admin, or APIM.
 >
 > **Tests / DoD**
+>
 > - Integration test: a simulated lineup event → notification delivered to an opted‑in test account.
 > - Flag on/off proven (G7); trophy screen still green.
 > - Meets [DELIVERY_PLAN Stage 4](../DELIVERY_PLAN.md#stage-4--lineup-notifications-default-on) exit criteria.
@@ -117,6 +123,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > (Player Ratings agent, skills/functions) and `SECURITY.md` (WAF‑for‑AI).
 >
 > **Scope**
+>
 > - **Ratings Function** using **Semantic Kernel** + **Microsoft Foundry** to estimate per‑player
 >   ratings from post‑match statistics; implement the plugin/functions defined in `AGENTS.md`.
 > - Let signed‑in users submit their own ratings; store in **Cosmos** `ratings`.
@@ -126,6 +133,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > **Do not** build news, search, admin, or APIM.
 >
 > **Tests / DoD**
+>
 > - Unit/integration for the SK functions (grounded, deterministic where possible) and Cosmos
 >   persistence; e2e with the flag on **and** off (off = feature fully absent).
 > - Meets [DELIVERY_PLAN Stage 5](../DELIVERY_PLAN.md#stage-5--player-ratings-flagged) exit criteria.
@@ -141,6 +149,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > rumours/news.** Read `AGENTS.md` (Transfer News agent) and the agentic patterns in `docs/CI_CD.md`.
 >
 > **Scope**
+>
 > - **Daily scheduled Function** (Semantic Kernel agent) that aggregates transfer items, dedupes, and
 >   scores **source + confidence**; store in **Cosmos** `transfers`.
 > - Surface items in the app when `transfer-news` is on.
@@ -150,6 +159,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > **Do not** build search, admin, or APIM.
 >
 > **Tests / DoD**
+>
 > - Test a scheduled run producing deduped, confidence‑scored items; grounding reduces hallucination;
 >   flag on/off proven.
 > - Meets [DELIVERY_PLAN Stage 6](../DELIVERY_PLAN.md#stage-6--transfer-news-flagged) exit criteria.
@@ -164,6 +174,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > agent) and `ARCHITECTURE.md` (data flows).
 >
 > **Scope**
+>
 > - **Azure AI Search** index projected from Cosmos (fixtures, results, ratings, stats) with an indexer
 >   or push pipeline.
 > - Search **API + UI**; relevance tuning; use the index as **grounding** for AI answers.
@@ -172,6 +183,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > **Do not** build admin or APIM.
 >
 > **Tests / DoD**
+>
 > - Relevance tests over a seeded corpus (results/players/ratings/stats return relevant hits); flag
 >   on/off proven.
 > - Meets [DELIVERY_PLAN Stage 7](../DELIVERY_PLAN.md#stage-7--search-flagged) exit criteria.
@@ -186,6 +198,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > portal.** Read `ARCHITECTURE.md` and `SECURITY.md`.
 >
 > **Scope**
+>
 > - **Azure API Management** in front of the Core API: products, subscription keys, **rate limiting**,
 >   and policies; route all clients through APIM.
 > - **Admin portal** (Container App) for content/data CRUD (fixtures, ratings, transfers) behind
@@ -195,6 +208,7 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > **Do not** add new end‑user features.
 >
 > **Tests / DoD**
+>
 > - APIM policy tests (throttling, keys); admin CRUD e2e with RBAC; clients verified to call **via
 >   APIM**; WAF review actioned.
 > - Meets [DELIVERY_PLAN Stage 8](../DELIVERY_PLAN.md#stage-8--governance--admin) exit criteria.
@@ -209,12 +223,14 @@ to API-Football. **Flag:** `lineup-notification` (default **ON**).
 > (native iOS deferral) and `ARCHITECTURE.md`.
 >
 > **Scope**
+>
 > - PWA **install/offline/responsive** hardening, validated on **iOS Safari**.
 > - Document the **native iOS** plan (MAUI vs Swift) and the **APNs** push migration from web push.
 >
 > **Do not** start native app development in this stage.
 >
 > **Tests / DoD**
+>
 > - Installable, responsive experience validated on iOS viewports; e2e for offline/install flows; native
 >   path documented.
 > - Meets [DELIVERY_PLAN Stage 9](../DELIVERY_PLAN.md#stage-9--mobile-polish) exit criteria.
