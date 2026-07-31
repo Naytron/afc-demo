@@ -55,8 +55,11 @@ timeline
 - ✅ Repo structure matches README
 - ✅ Repo settings **codified** as `scripts/setup-github.ps1` + [docs/REPO_SETUP.md](./docs/REPO_SETUP.md):
   branch protection, environments (`dev`, `prod`), runner group `afc-runners`
-- ☐ Repo settings **applied** — requires a GitHub remote + admin; run `scripts/setup-github.ps1` once the
-  target `owner/repo` exists (see [docs/REPO_SETUP.md](./docs/REPO_SETUP.md))
+- ✅ Repo created & pushed: [`naytron/afc-demo`](https://github.com/naytron/afc-demo) (private)
+- ✅ Repo settings **applied**: branch protection on `main` (1 review + CODEOWNERS + `docs-lint`
+  check + linear history + conversation resolution, no force‑push/delete) and `dev`/`prod` environments
+- ☐ `prod` reviewer approval gate + `afc-runners` runner group — **deferred** (need a public repo or a
+  Team/Enterprise org; see [Plan limitations](./docs/REPO_SETUP.md#4-plan-limitations-current-repo))
 - **Exit:** markdown lint passes; repo structure matches README; reviewers sign off on the spec.
 
 ### Stage 1 — Local simple site

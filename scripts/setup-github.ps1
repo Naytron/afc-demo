@@ -1,15 +1,19 @@
 <#
 .SYNOPSIS
   Applies AFC Demo Stage 0 GitHub repo settings: branch protection, dev/prod environments,
-  and the afc-runners runner group.
+  and (org repos only) the afc-runners runner group.
 
 .DESCRIPTION
-  Idempotent for branch protection and environments (PUT). The runner group is created only if it
-  does not already exist. Requires the GitHub CLI (gh) authenticated against your GitHub Enterprise
-  host with repo admin (and org admin for the runner group).
+  Sends JSON request bodies via `gh api --input -` so nested objects, arrays, and null values
+  (e.g. branch-protection `restrictions`) serialize correctly. Idempotent for branch protection and
+  environments (PUT). The runner group is created only on org-owned repos and only if it does not
+  already exist (personal accounts have no runner groups and the step is skipped with a warning).
+
+  Requires the GitHub CLI (gh) authenticated with repo admin (and, for the runner group, org admin /
+  the admin:org token scope).
 
 .EXAMPLE
-  ./scripts/setup-github.ps1 -Repo "your-org/afc-demo" -ProdReviewers @("nlangston")
+  ./scripts/setup-github.ps1 -Repo "naytron/afc-demo" -ProdReviewers @("Naytron")
 
 .NOTES
   Naming: GitHub/Azure resources use kebab-case; markdown files use UPPERCASE_WITH_UNDERSCORES.
@@ -28,7 +32,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Org = $Repo.Split('/')[0]
+$Owner = $Repo.Split('/')[0]
 
 function Assert-GhReady {
     if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
@@ -38,71 +42,85 @@ function Assert-GhReady {
     if ($LASTEXITCODE -ne 0) { throw "gh is not authenticated. Run 'gh auth login' first." }
 }
 
-function Invoke-GhApi {
-    param([string]$Method, [string]$Path, [string[]]$ApiArgs = @())
+function Invoke-GhJson {
+    param([string]$Method, [string]$Path, [hashtable]$Body = @{})
+    $json = ConvertTo-Json -InputObject $Body -Depth 12
     if ($PSCmdlet.ShouldProcess($Path, "$Method")) {
-        & gh api -X $Method $Path @ApiArgs
+        $json | & gh api -X $Method $Path --input - 1>$null
         if ($LASTEXITCODE -ne 0) { throw "gh api $Method $Path failed (exit $LASTEXITCODE)." }
     } else {
-        Write-Host "  [WhatIf] gh api -X $Method $Path $($ApiArgs -join ' ')"
+        Write-Host "  [WhatIf] gh api -X $Method $Path --input -`n$json"
     }
 }
 
 Assert-GhReady
-Write-Host "Configuring $Repo (org: $Org)" -ForegroundColor Cyan
+
+# Is the repo owner an organization? Runner groups exist only for orgs.
+$ownerType = (& gh api "users/$Owner" --jq '.type' 2>$null)
+Write-Host "Configuring $Repo (owner: $Owner, type: $ownerType)" -ForegroundColor Cyan
 
 # --- 1. dev environment (no protection) -------------------------------------------------
 Write-Host "`n[1/4] Environment: dev" -ForegroundColor Yellow
-Invoke-GhApi -Method PUT -Path "repos/$Repo/environments/dev"
+Invoke-GhJson -Method PUT -Path "repos/$Repo/environments/dev" -Body @{}
 
 # --- 2. prod environment (required reviewers, main-only) --------------------------------
 Write-Host "`n[2/4] Environment: prod" -ForegroundColor Yellow
-$prodArgs = @(
-    '-F', 'deployment_branch_policy[protected_branches]=true',
-    '-F', 'deployment_branch_policy[custom_branch_policies]=false'
-)
+$reviewers = @()
 foreach ($r in $ProdReviewers) {
     $id = (& gh api "users/$r" --jq '.id')
     if ($LASTEXITCODE -ne 0 -or -not $id) { throw "Could not resolve GitHub user '$r'." }
-    $prodArgs += @('-F', 'reviewers[][type]=User', '-F', "reviewers[][id]=$id")
+    $reviewers += @{ type = 'User'; id = [int]$id }
     Write-Host "  required reviewer: $r (id $id)"
 }
-if ($ProdReviewers.Count -eq 0) {
-    Write-Warning "No -ProdReviewers supplied; prod will have no manual approval gate. Re-run with reviewers to enforce it."
+if ($reviewers.Count -eq 0) {
+    Write-Warning "No -ProdReviewers supplied; prod will have no manual approval gate."
 }
-Invoke-GhApi -Method PUT -Path "repos/$Repo/environments/prod" -ApiArgs $prodArgs
+$prodBody = @{
+    reviewers                = $reviewers
+    deployment_branch_policy = @{ protected_branches = $true; custom_branch_policies = $false }
+}
+try {
+    Invoke-GhJson -Method PUT -Path "repos/$Repo/environments/prod" -Body $prodBody
+} catch {
+    Write-Warning "Environment protection rules rejected (reviewers/branch-policy need a public repo or a Team/Enterprise org). Creating a bare 'prod' environment; add the approval gate once the plan supports it."
+    Invoke-GhJson -Method PUT -Path "repos/$Repo/environments/prod" -Body @{}
+}
 
 # --- 3. branch protection on main -------------------------------------------------------
 Write-Host "`n[3/4] Branch protection: main" -ForegroundColor Yellow
-$bpArgs = @(
-    '-F', 'required_status_checks[strict]=true',
-    '-F', 'required_pull_request_reviews[required_approving_review_count]=1',
-    '-F', 'required_pull_request_reviews[require_code_owner_reviews]=true',
-    '-F', 'required_linear_history=true',
-    '-F', 'required_conversation_resolution=true',
-    '-F', 'enforce_admins=false',
-    '-F', 'restrictions=',
-    '-F', 'allow_force_pushes=false',
-    '-F', 'allow_deletions=false'
-)
-foreach ($c in $StatusChecks) { $bpArgs += @('-F', "required_status_checks[contexts][]=$c") }
-Invoke-GhApi -Method PUT -Path "repos/$Repo/branches/main/protection" -ApiArgs $bpArgs
+$bpBody = @{
+    required_status_checks           = @{ strict = $true; contexts = @($StatusChecks) }
+    enforce_admins                   = $false
+    required_pull_request_reviews    = @{
+        required_approving_review_count = 1
+        require_code_owner_reviews      = $true
+        dismiss_stale_reviews           = $true
+    }
+    restrictions                     = $null
+    required_linear_history          = $true
+    required_conversation_resolution = $true
+    allow_force_pushes               = $false
+    allow_deletions                  = $false
+}
+Invoke-GhJson -Method PUT -Path "repos/$Repo/branches/main/protection" -Body $bpBody
 
-# --- 4. runner group (org-level) --------------------------------------------------------
+# --- 4. runner group (org-owned repos only) --------------------------------------------
 Write-Host "`n[4/4] Runner group: $RunnerGroup" -ForegroundColor Yellow
-$existing = (& gh api "orgs/$Org/actions/runner-groups" --jq ".runner_groups[] | select(.name==`"$RunnerGroup`") | .name" 2>$null)
-if ($existing) {
-    Write-Host "  runner group '$RunnerGroup' already exists; skipping."
+if ($ownerType -ne 'Organization') {
+    Write-Warning "Owner '$Owner' is a $ownerType, not an Organization. Runner groups are an org-only feature; skipping. Move the repo to an org to use '$RunnerGroup'."
 } else {
-    try {
-        Invoke-GhApi -Method POST -Path "orgs/$Org/actions/runner-groups" -ApiArgs @(
-            '-f', "name=$RunnerGroup",
-            '-f', 'visibility=selected',
-            '-F', 'restricted_to_workflows=false'
-        )
-        Write-Host "  created runner group '$RunnerGroup'. Now add self-hosted runners and scope it to $Repo."
-    } catch {
-        Write-Warning "Runner group step failed (org admin required?). Create '$RunnerGroup' manually per docs/REPO_SETUP.md. $_"
+    $existing = (& gh api "orgs/$Owner/actions/runner-groups" --jq ".runner_groups[] | select(.name==`"$RunnerGroup`") | .name" 2>$null)
+    if ($existing) {
+        Write-Host "  runner group '$RunnerGroup' already exists; skipping."
+    } else {
+        try {
+            '{"name":"' + $RunnerGroup + '","visibility":"selected","restricted_to_workflows":false}' |
+                & gh api -X POST "orgs/$Owner/actions/runner-groups" --input - 1>$null
+            if ($LASTEXITCODE -ne 0) { throw "POST returned exit $LASTEXITCODE" }
+            Write-Host "  created runner group '$RunnerGroup'. Now add self-hosted runners and scope it to $Repo."
+        } catch {
+            Write-Warning "Runner group step failed (org admin / admin:org scope required?). Create '$RunnerGroup' manually per docs/REPO_SETUP.md. $_"
+        }
     }
 }
 
