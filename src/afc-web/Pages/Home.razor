@@ -1,0 +1,83 @@
+@page "/"
+@inject FootballApiClient Api
+
+<PageTitle>AFC Trophy</PageTitle>
+
+@if (home is null)
+{
+    <p class="loading">Loading Arsenal's season…</p>
+}
+else
+{
+    <section class="hero" aria-labelledby="trophy-heading">
+        <p class="eyebrow">Arsenal season dashboard</p>
+        <h1 id="trophy-heading">The Trophy Cabinet</h1>
+        @if (home.FeaturedFixture is { } fixture)
+        {
+            <article class="fixture-card" aria-label="Next Arsenal fixture">
+                <p class="fixture-label">@((fixture.Status == FixtureStatus.Live) ? "Live now" : "Next fixture")</p>
+                <p class="fixture-teams">@fixture.HomeTeam <span>vs</span> @fixture.AwayTeam</p>
+                <time datetime="@fixture.KickoffUtc.ToString("O")">@fixture.KickoffUtc.ToLocalTime().ToString("ddd, MMM d · h:mm tt")</time>
+            </article>
+        }
+    </section>
+
+    @if (home.IsLineupNotificationEnabled)
+    {
+        <aside class="notification-stub">
+            <strong>Lineup alerts are on</strong>
+            <span>Notifications will arrive in Stage 4.</span>
+        </aside>
+    }
+
+    <section aria-labelledby="competitions-heading">
+        <div class="section-heading">
+            <h2 id="competitions-heading">Competitions</h2>
+            <p>Tap a trophy to view the table.</p>
+        </div>
+        <div class="trophy-grid">
+            @foreach (var snapshot in home.Competitions)
+            {
+                <a class="trophy @(snapshot.Competition.IsEliminated ? "eliminated" : "")"
+                   href="/competitions/@snapshot.Competition.Id"
+                   aria-label="@snapshot.Competition.Name standings">
+                    <span class="trophy-icon" aria-hidden="true">♜</span>
+                    <span class="trophy-name">@snapshot.Competition.Name</span>
+                    <span class="standing">Arsenal · @snapshot.Standings.First().Position@Ordinal(snapshot.Standings.First().Position)</span>
+                    @if (snapshot.Competition.IsEliminated)
+                    {
+                        <span class="status">Eliminated</span>
+                    }
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="sign-in" aria-labelledby="sign-in-heading">
+        <h2 id="sign-in-heading">Make it yours</h2>
+        <p>Accounts arrive in Stage 3. These sign-in options are not active yet.</p>
+        <div class="social-buttons">
+            <button type="button" disabled>Continue with Google</button>
+            <button type="button" disabled>Continue with Apple</button>
+            <button type="button" disabled>Continue with X</button>
+        </div>
+    </section>
+}
+
+@code {
+    private HomeResponse? home;
+
+    protected override async Task OnInitializedAsync() => home = await Api.GetHomeAsync();
+
+    private static string Ordinal(int number) => (number % 100) switch
+    {
+        11 or 12 or 13 => "th",
+        _ => (number % 10) switch
+        {
+            1 => "st",
+            2 => "nd",
+            3 => "rd",
+            _ => "th"
+        }
+    };
+}

@@ -65,36 +65,36 @@ timeline
 
 ### Stage 1 — Local simple site
 
-- ☐ .NET Aspire AppHost orchestrating Web (Blazor WASM PWA) + minimal Core API
-- ☐ Trophy/standings **home screen**: next/live fixture + standing per competition
-- ☐ Clickable trophy → competition detail (standings/stats) screen
-- ☐ `IFootballDataProvider` with football-data.org implementation **and** a mock provider
-- ☐ Feature‑flag plumbing with local JSON fallback (`trophy-screen`, `lineup-notification` ON)
-- ☐ Unit + component tests; **Playwright e2e** run locally and in CI
-- **Exit:** `dotnet run` on AppHost serves the site; all tests green locally and in CI; no cloud
-  dependency.
+- ✅ .NET Aspire AppHost orchestrating Web (Blazor WASM PWA) + minimal Core API
+- ✅ Trophy/standings **home screen**: next/live fixture + standing per competition
+- ✅ Clickable trophy → competition detail (standings/stats) screen
+- ✅ `IFootballDataProvider` with football-data.org implementation **and** a mock provider
+- ✅ Feature-flag plumbing with local JSON fallback (`trophy-screen`, `lineup-notification` ON)
+- ✅ Unit + component tests; **Playwright e2e** run locally and in CI
+- **Exit:** `dotnet run` on AppHost serves the site; all tests are green locally; the CI workflow
+  runs the same build, test, and e2e gates on push/PR; no cloud dependency.
 
 | Component | Target | Deps updated | Builds | Tests | Deployed | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| afc-web (PWA) | net (latest LTS) | ☐ | ☐ | ☐ | n/a | Blazor WASM |
-| afc-api (minimal) | net (latest LTS) | ☐ | ☐ | ☐ | n/a | Trophy/standings endpoints |
-| afc-apphost (Aspire) | net (latest LTS) | ☐ | ☐ | ☐ | n/a | Local orchestration |
+| afc-web (PWA) | net (latest LTS) | ✅ | ✅ | ✅ | n/a | Blazor WASM |
+| afc-api (minimal) | net (latest LTS) | ✅ | ✅ | ✅ | n/a | Trophy/standings endpoints |
+| afc-apphost (Aspire) | net (latest LTS) | ✅ | ✅ | ✅ | n/a | Local orchestration |
 
 ### Stage 2 — Deploy simple site to Azure
 
-- ☐ Bicep IaC for `rg-afc-dev` (SWA, Container App API, App Config, App Insights, ACR use)
-- ☐ GitHub OIDC federation to `afc-dev` and `afc-prod`
-- ☐ Workflows: `ci.yml`, `cd-dev.yml`, `cd-prod.yml` (approval), `e2e.yml`, `manual-test.yml`
-- ☐ Preview environments on PR; smoke + e2e against deployed preview
-- ☐ Prod environment with required reviewers; single region East US 2
-- **Exit:** merge to `main` deploys to `afc-dev`; approved release deploys to `afc-prod`; deployed
-  smoke + e2e green; rollback documented.
+- ✅ Bicep IaC for `rg-afc-dev` (SWA, Container App API, App Config, App Insights, ACR use)
+- ✅ GitHub OIDC federation to `afc-dev` and `afc-prod`
+- ✅ Workflows: `ci.yml`, `cd-dev.yml`, `cd-prod.yml` (approval), `e2e.yml`, `manual-test.yml`
+- ✅ Preview environments on PR; smoke + e2e against deployed preview
+- ✅ Prod environment with required reviewers; single region East US 2
+- **Exit:** dev is deployed and validated; after this branch is merged, an approved release deploys the
+  same immutable build to `afc-prod`. Deployed smoke + e2e are green; rollback is documented.
 
 | Component | Target | Deps | Builds | Tests | Deploy verified | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| afc-web-dev/prod | SWA | ☐ | ☐ | ☐ | ☐ | |
-| afc-api-dev/prod | Container App | ☐ | ☐ | ☐ | ☐ | |
-| afc-appconfig | App Config | ☐ | ☐ | ☐ | ☐ | flags |
+| afc-web-dev/prod | SWA | ✅ | ✅ | ✅ | dev ✅; prod protected | |
+| afc-api-dev/prod | Container App | ✅ | ✅ | ✅ | dev ✅; prod protected | |
+| afc-appconfig | App Config | ✅ | ✅ | ✅ | dev ✅; prod protected | flags |
 
 ### Stage 3 — Accounts & auth
 

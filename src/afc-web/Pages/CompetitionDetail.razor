@@ -1,0 +1,48 @@
+@page "/competitions/{CompetitionId}"
+@inject FootballApiClient Api
+
+<PageTitle>@(competition?.Competition.Name ?? "Competition") | AFC Trophy</PageTitle>
+
+<a class="back-link" href="/">← Trophy cabinet</a>
+
+@if (competition is null)
+{
+    <p class="loading">Loading competition standings…</p>
+}
+else
+{
+    <section class="competition-header">
+        <p class="eyebrow">Competition detail</p>
+        <h1>@competition.Competition.Name</h1>
+        @if (competition.Competition.IsEliminated)
+        {
+            <p class="muted">Arsenal have been eliminated from this competition.</p>
+        }
+    </section>
+
+    <section class="table-wrap" aria-labelledby="standings-heading">
+        <h2 id="standings-heading">Standings</h2>
+        <table>
+            <thead><tr><th>Pos</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
+            <tbody>
+                @foreach (var standing in competition.Standings)
+                {
+                    <tr class="@(standing.Position == 1 ? "arsenal-row" : "")">
+                        <td>@standing.Position</td><td>@(standing.Position == 1 ? "Arsenal" : $"Club {standing.Position}")</td>
+                        <td>@standing.Played</td><td>@standing.Won</td><td>@standing.Drawn</td><td>@standing.Lost</td>
+                        <td>@standing.GoalDifference</td><td>@standing.Points</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@code {
+    [Parameter] public string CompetitionId { get; set; } = string.Empty;
+
+    private CompetitionSnapshot? competition;
+
+    protected override async Task OnParametersSetAsync() =>
+        competition = await Api.GetCompetitionAsync(CompetitionId);
+}

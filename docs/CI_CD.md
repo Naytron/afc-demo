@@ -1,8 +1,8 @@
 # CI/CD — AFC Demo (GitHub Enterprise)
 
-Strategy and **skeleton workflows** for building, testing, and deploying AFC Demo. Workflows are
-introduced at **Stage 2** (first cloud deploy). This file documents the approach and provides
-starting‑point YAML; live workflow files land under `.github/workflows/` when app code exists.
+Strategy and workflows for building, testing, and deploying AFC Demo. Stage 1 supplies `ci.yml`;
+Stage 2 adds the live `cd-dev.yml`, `cd-prod.yml`, `e2e.yml`, and `manual-test.yml` workflows under
+`.github/workflows/`.
 
 > **Security baseline for every workflow**
 >
@@ -31,7 +31,7 @@ starting‑point YAML; live workflow files land under `.github/workflows/` when 
 | File (kebab-case) | Trigger | Purpose |
 | --- | --- | --- |
 | `ci.yml` | `pull_request`, `push: main` | Build + unit/component + lint + IaC validate |
-| `e2e.yml` | `pull_request` (after preview), nightly `schedule` | Playwright e2e + smoke |
+| `e2e.yml` | `pull_request` (after preview), nightly `schedule` | PWA preview + Playwright e2e + smoke |
 | `cd-dev.yml` | `push: main` | Deploy to `afc-dev` (SWA + Container App) |
 | `cd-prod.yml` | `workflow_dispatch`, release published | Approved deploy to `afc-prod` |
 | `manual-test.yml` | `workflow_dispatch` (inputs) | Ad‑hoc/manual test run against a chosen env |
@@ -64,7 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Setup .NET
-        uses: actions/setup-dotnet@e2be71bcb6de6d0d18f1c1cd54c6a2a04f9b6bc # v4.x — pin to verified SHA
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           dotnet-version: '9.0.x'   # latest LTS
       - name: Restore

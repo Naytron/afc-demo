@@ -8,7 +8,7 @@
 > A reference/demo application for showcasing **Azure** and **Azure AI** technologies end‑to‑end,
 > built as an Arsenal Football Club (AFC) fan experience for **web and mobile (iOS)**.
 
-[![Stage](https://img.shields.io/badge/stage-0%20·%20spec-blue)](./DELIVERY_PLAN.md)
+[![Stage](https://img.shields.io/badge/stage-1%20·%20local%20baseline-blue)](./DELIVERY_PLAN.md)
 [![Well-Architected](https://img.shields.io/badge/Azure-Well--Architected-0078D4)](./ARCHITECTURE.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](#license)
 
@@ -25,9 +25,9 @@ The app itself is an Arsenal fan site: a clean "Trophy" home screen showing the 
 Arsenal's standing in each competition, with progressively richer, AI‑powered features gated behind
 feature flags.
 
-> **This repository currently contains the specification only** (docs, diagrams, and a bootstrap
-> prompt). Application code is generated from [`docs/BOOTSTRAP_PROMPT.md`](./docs/BOOTSTRAP_PROMPT.md)
-> starting at Stage 1.
+> **Stage 1 is implemented locally.** The repository contains the specification package plus a
+> mock-backed Blazor WebAssembly PWA, minimal Core API, and Aspire AppHost. Cloud deployment begins
+> at Stage 2.
 
 ## Documentation map
 
@@ -92,14 +92,26 @@ All features are hidden behind **feature flags** except the two default‑ON fea
 
 ## Quickstart
 
-Application code does not exist yet — it is generated at Stage 1. To begin:
+Run the Stage 1 local baseline:
 
-1. Read [ARCHITECTURE.md](./ARCHITECTURE.md) and [DELIVERY_PLAN.md](./DELIVERY_PLAN.md).
-2. Follow [SETUP.md](./SETUP.md) to prepare local prerequisites (.NET SDK, Aspire workload, Docker).
-3. Read [docs/EXECUTION_PLAYBOOK.md](./docs/EXECUTION_PLAYBOOK.md) for the per‑stage build loop and test gates.
-4. Use [docs/BOOTSTRAP_PROMPT.md](./docs/BOOTSTRAP_PROMPT.md) to generate the Stage 1 local site, then
-   [docs/STAGE_PROMPTS.md](./docs/STAGE_PROMPTS.md) for Stages 2–9 (one PR per stage).
-5. Verify the Stage 0/Stage 1 checklists in [DELIVERY_PLAN.md](./DELIVERY_PLAN.md).
+```bash
+dotnet restore
+dotnet run --project ./src/afc-apphost
+```
+
+The Aspire AppHost serves the PWA at `http://localhost:5182` and the API at
+`http://localhost:5181`. It uses deterministic mock data by default and needs no key or cloud
+resource. Run the validation suite with:
+
+```bash
+dotnet test -c Release
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+Read [docs/EXECUTION_PLAYBOOK.md](./docs/EXECUTION_PLAYBOOK.md) for the per-stage build loop and
+[docs/STAGE_PROMPTS.md](./docs/STAGE_PROMPTS.md) for Stages 2–9.
 
 ## Repository layout
 

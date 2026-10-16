@@ -1,0 +1,90 @@
+name: cd-dev
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cd-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Set up .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Azure login
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Build API image
+        run: az acr build --registry "${{ vars.ACR_NAME }}" --image "afc-api:${{ github.sha }}" --file src/afc-api/Dockerfile .
+      - name: Provision application stack
+        id: provision
+        run: |
+          result="$(az deployment group create \
+            --resource-group rg-afc-dev \
+            --template-file infra/main.bicep \
+            --parameters infra/params.dev.bicepparam \
+            --parameters owner="${{ vars.RESOURCE_OWNER }}" costCenter="${{ vars.COST_CENTER }}" \
+              acrLoginServer="${{ vars.ACR_LOGIN_SERVER }}" \
+              containerImage="${{ vars.ACR_LOGIN_SERVER }}/afc-api:${{ github.sha }}" \
+            --query properties.outputs --output json)"
+          echo "api_url=$(jq -r '.apiUrl.value' <<< "$result")" >> "$GITHUB_OUTPUT"
+          echo "web_name=$(jq -r '.staticWebAppName.value' <<< "$result")" >> "$GITHUB_OUTPUT"
+      - name: Grant API pull access
+        run: |
+          principal_id="$(az containerapp identity show --name afc-api-dev --resource-group rg-afc-dev --query principalId --output tsv)"
+          assignment_count="$(az role assignment list --assignee-object-id "$principal_id" --role AcrPull \
+            --scope "${{ vars.ACR_RESOURCE_ID }}" --query 'length(@)' --output tsv)"
+          if [ "$assignment_count" = "0" ]; then
+            az role assignment create --assignee-object-id "$principal_id" --assignee-principal-type ServicePrincipal \
+              --role AcrPull --scope "${{ vars.ACR_RESOURCE_ID }}"
+          fi
+      - name: Configure API feature access
+        run: |
+          appconfig_id="$(az appconfig show --name afc-appconfig-dev --resource-group rg-afc-dev --query id --output tsv)"
+          api_principal_id="$(az containerapp identity show --name afc-api-dev --resource-group rg-afc-dev --query principalId --output tsv)"
+          workflow_principal_id="$(az identity show --name afc-gh-dev --resource-group rg-afc-dev --query principalId --output tsv)"
+          for assignment in "$api_principal_id:App Configuration Data Reader" "$workflow_principal_id:App Configuration Data Owner"; do
+            principal_id="${assignment%%:*}"
+            role="${assignment#*:}"
+            assignment_count="$(az role assignment list --assignee-object-id "$principal_id" --role "$role" --scope "$appconfig_id" --query 'length(@)' --output tsv)"
+            if [ "$assignment_count" = "0" ]; then
+              az role assignment create --assignee-object-id "$principal_id" --assignee-principal-type ServicePrincipal \
+                --role "$role" --scope "$appconfig_id"
+            fi
+          done
+          ./scripts/configure-app-configuration.sh rg-afc-dev dev
+      - name: Build PWA for deployed API
+        run: |
+          printf '{\n  "ApiBaseUrl": "%s/"\n}\n' "${{ steps.provision.outputs.api_url }}" > src/afc-web/wwwroot/appsettings.Production.json
+          dotnet publish src/afc-web/Afc.Web.csproj --configuration Release --output ./artifacts/web
+      - name: Read deployment token
+        run: |
+          token="$(az staticwebapp secrets list --name "${{ steps.provision.outputs.web_name }}" \
+            --resource-group rg-afc-dev --query properties.apiKey --output tsv)"
+          echo "::add-mask::$token"
+          echo "azure_static_web_apps_api_token=$token" >> "$GITHUB_ENV"
+      - name: Deploy PWA
+        id: deploy
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          action: upload
+          app_location: artifacts/web/wwwroot
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ env.azure_static_web_apps_api_token }}
+      - name: Smoke test deployed application
+        run: ./scripts/smoke.sh "${{ steps.deploy.outputs.static_web_app_url }}" "${{ steps.provision.outputs.api_url }}"

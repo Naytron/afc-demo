@@ -1,0 +1,55 @@
+name: manual-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, prod]
+      suite:
+        description: Test suite
+        required: true
+        type: choice
+        options: [smoke, e2e]
+        default: smoke
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Set up Node
+        if: inputs.suite == 'e2e'
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 24
+          cache: npm
+      - name: Azure login
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Resolve endpoints
+        id: endpoints
+        run: |
+          echo "site=https://$(az staticwebapp show --name afc-web-${{ inputs.environment }} --resource-group rg-afc-${{ inputs.environment }} --query defaultHostname --output tsv)" >> "$GITHUB_OUTPUT"
+          echo "api=https://$(az containerapp show --name afc-api-${{ inputs.environment }} --resource-group rg-afc-${{ inputs.environment }} --query properties.configuration.ingress.fqdn --output tsv)" >> "$GITHUB_OUTPUT"
+      - name: Run smoke suite
+        run: ./scripts/smoke.sh "${{ steps.endpoints.outputs.site }}" "${{ steps.endpoints.outputs.api }}"
+      - name: Run Playwright suite
+        if: inputs.suite == 'e2e'
+        env:
+          BASE_URL: ${{ steps.endpoints.outputs.site }}
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run test:e2e
