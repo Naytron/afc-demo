@@ -52,13 +52,14 @@ jobs:
           echo "azure_static_web_apps_api_token=$token" >> "$GITHUB_ENV"
       - name: Deploy preview
         id: deploy
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
-        with:
-          action: upload
-          app_location: artifacts/web/wwwroot
-          skip_app_build: true
-          azure_static_web_apps_api_token: ${{ env.azure_static_web_apps_api_token }}
-          deployment_environment: preview-${{ github.event.pull_request.number || 'nightly' }}
+        run: |
+          environment_name="preview-${{ github.event.pull_request.number || 'nightly' }}"
+          SWA_CLI_DEPLOYMENT_TOKEN="${{ env.azure_static_web_apps_api_token }}" \
+            npx --yes @azure/static-web-apps-cli@2.0.10 deploy ./artifacts/web/wwwroot \
+              --env "$environment_name" --no-use-keychain
+          host="$(az staticwebapp environment show --name afc-web-dev --resource-group rg-afc-dev \
+            --environment-name "$environment_name" --query defaultHostname --output tsv)"
+          echo "static_web_app_url=https://$host" >> "$GITHUB_OUTPUT"
       - name: Install browser dependencies
         run: |
           npm ci
