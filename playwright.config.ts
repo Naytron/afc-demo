@@ -6,7 +6,7 @@ export default defineConfig({
     baseURL: process.env.BASE_URL ?? "http://localhost:5182",
     trace: "retain-on-failure"
   },
-  webServer: [
+  webServer: process.env.BASE_URL ? undefined : [
     {
       command: "dotnet run --project src/afc-api",
       url: "http://localhost:5181/health",
