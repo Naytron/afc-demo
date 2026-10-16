@@ -8,6 +8,18 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 
+- **Stage 2 deployment foundation:** Bicep for Static Web Apps, Container Apps, App Configuration,
+  Application Insights, and Log Analytics; OIDC-based dev/prod deployment workflows; preview e2e
+  and smoke workflows; and a container image definition for the API.
+- **Stage 2 dev deployment:** provisioned the shared ACR, GitHub OIDC managed identities, and the
+  live dev stack. Deployed smoke and Playwright validation pass against the Static Web App and
+  Container App; production remains protected by the required-release approval workflow.
+- **Cloud feature configuration:** the API loads Azure App Configuration through managed identity
+  when an endpoint is configured, while retaining JSON-backed flags for local development.
+- **Stage 1 local baseline:** .NET Aspire AppHost, Blazor WebAssembly PWA, minimal Core API,
+  mock-backed football data, local feature flags, unit/component/Playwright tests, and the `ci`
+  build/test workflow. The Trophy home screen and competition-detail view run locally without
+  cloud dependencies.
 - **Execution playbook** ([docs/EXECUTION_PLAYBOOK.md](./docs/EXECUTION_PLAYBOOK.md)): the per‑stage
   build loop, test gates (G0–G8), branching/PR conventions, environment promotion, and rollback.
 - **Stage prompts** ([docs/STAGE_PROMPTS.md](./docs/STAGE_PROMPTS.md)): scoped, testable kickoff prompts

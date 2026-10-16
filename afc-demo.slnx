@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/afc-api/">
+    <Project Path="src/afc-api/Afc.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/afc-apphost/">
+    <Project Path="src/afc-apphost/Afc.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/afc-domain/">
+    <Project Path="src/afc-domain/Afc.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/afc-web-host/">
+    <Project Path="src/afc-web-host/Afc.Web.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/afc-web/">
+    <Project Path="src/afc-web/Afc.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/afc-api.tests/">
+    <Project Path="tests/afc-api.tests/Afc.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/afc-domain.tests/">
+    <Project Path="tests/afc-domain.tests/Afc.Domain.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/afc-web.tests/">
+    <Project Path="tests/afc-web.tests/Afc.Web.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,9 +1,7 @@
 # Setup — AFC Demo
 
-How to prepare a machine for local development and how each environment is provisioned. At **Stage 0**
-the repository contains only the specification — application code is generated from
-[docs/BOOTSTRAP_PROMPT.md](./docs/BOOTSTRAP_PROMPT.md) starting at **Stage 1**. This guide describes
-what you will need as those stages come online.
+How to prepare a machine for local development and how each environment is provisioned. Stage 1 is available locally with mock data. This guide describes the prerequisites for the local
+baseline and later cloud stages.
 
 ---
 
@@ -12,8 +10,8 @@ what you will need as those stages come online.
 | Tool | Purpose | Notes |
 | --- | --- | --- |
 | **.NET SDK** (latest LTS) | Build/run C# app + Aspire | `dotnet --info` to verify |
-| **.NET Aspire workload** | Local orchestration | `dotnet workload install aspire` |
-| **Docker Desktop** | Containers + Cosmos emulator | Required for Aspire container resources |
+| **.NET Aspire packages** | Local orchestration | Restored from NuGet with the solution |
+| **Docker Desktop** | Containers + Cosmos emulator | Required when a later stage adds container resources |
 | **Node.js LTS** | Playwright e2e / tooling | For test tooling |
 | **Azure CLI** | Cloud interaction | `az login` |
 | **Bicep CLI** | IaC (Stage 2+) | `az bicep install` |
@@ -71,9 +69,13 @@ Infrastructure is **Bicep** and applied per environment via CI/CD (no manual por
 app resources).
 
 ```bash
-# example — actual modules land at Stage 2
-az deployment sub create \
-  --location eastus2 \
+# Validate the Stage 2 resource-group template locally
+az bicep build \
+  --file ./infra/main.bicep
+
+# CI performs this deployment after Azure OIDC login
+az deployment group create \
+  --resource-group rg-afc-dev \
   --template-file ./infra/main.bicep \
   --parameters ./infra/params.dev.bicepparam
 ```
@@ -81,11 +83,30 @@ az deployment sub create \
 ### One‑time platform setup
 
 1. Create subscriptions/resource groups: `rg-afc-dev`, `rg-afc-prod`, platform RG.
-2. Create **ACR** (`afcacrplatform`) and central Log Analytics in `afc-platform`.
+2. Create **ACR** and central Log Analytics in `afc-platform`. The intended registry name is
+   `afcacrplatform`; Azure registry names are globally unique, so this deployment uses the
+   subscription-suffixed `afcacrplatformebad4aa3` after the intended name was unavailable.
 3. Configure **GitHub OIDC federation** (app registrations / federated credentials) for `dev` and
-   `prod`; grant least‑privilege RBAC.
+   `prod`; grant deployment Contributor access to the respective app resource group and AcrPush
+   access to the shared ACR. The deployment identity also needs User Access Administrator on the ACR
+   scope to grant the Container App its AcrPull role.
 4. Create GitHub **environments** (`dev`, `prod`) and **runner group** `afc-runners`
    (see [docs/CI_CD.md](./docs/CI_CD.md)).
+
+### GitHub environment configuration
+
+Set these non-secret environment variables in both `dev` and `prod`: `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `ACR_NAME`, `ACR_LOGIN_SERVER`, `ACR_RESOURCE_ID`,
+`RESOURCE_OWNER`, and `COST_CENTER`. The workflows exchange GitHub's OIDC token for Azure access;
+they retrieve the Static Web Apps deployment token at runtime and do not store it in GitHub.
+
+### Deployment and rollback
+
+`cd-dev.yml` deploys every `main` push to `rg-afc-dev`; `cd-prod.yml` deploys a published release
+through the protected `prod` environment. Both deploy an immutable API image tagged with the commit
+SHA and publish a PWA build configured with the deployed API URL. To roll back, redeploy a prior
+commit or release so its immutable image is selected, then redeploy the matching PWA build. Use App
+Configuration feature flags as the immediate kill switch for a flag-controlled capability.
 
 ### Per‑stage additions
 
