@@ -72,7 +72,7 @@ public sealed class FootballDataOrgProvider : IFootballDataProvider
             item.HomeTeam.Name,
             item.AwayTeam.Name,
             item.UtcDate,
-            item.Status == "IN_PLAY" ? FixtureStatus.Live : FixtureStatus.Scheduled);
+            item.Status is "IN_PLAY" or "PAUSED" ? FixtureStatus.Live : FixtureStatus.Scheduled);
 
     private sealed record MatchesResponse(IReadOnlyList<MatchItem> Matches);
     private sealed record MatchItem(
