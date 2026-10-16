@@ -4,15 +4,7 @@ var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.Use(async (context, next) =>
-{
-    if (!Path.HasExtension(context.Request.Path))
-    {
-        context.Request.Path = "/index.html";
-    }
-
-    await next();
-});
+app.MapFallbackToFile("index.html");
 app.MapStaticAssets();
 
 app.Run();
