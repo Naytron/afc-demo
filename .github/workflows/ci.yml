@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Set up .NET
-        uses: actions/setup-dotnet@e2be71bcb6de6d0d18f1c1cd54c6a2a04f9b6bc # v4
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           dotnet-version: "10.0.x"
       - name: Set up Node
