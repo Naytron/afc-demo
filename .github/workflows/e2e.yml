@@ -53,13 +53,14 @@ jobs:
       - name: Deploy preview
         id: deploy
         run: |
+          set -o pipefail
           environment_name="preview-${{ github.event.pull_request.number || 'nightly' }}"
-          SWA_CLI_DEPLOYMENT_TOKEN="${{ env.azure_static_web_apps_api_token }}" \
+          preview_url="$(SWA_CLI_DEPLOYMENT_TOKEN="${{ env.azure_static_web_apps_api_token }}" \
             npx --yes @azure/static-web-apps-cli@2.0.10 deploy ./artifacts/web/wwwroot \
-              --env "$environment_name" --no-use-keychain
-          host="$(az staticwebapp environment show --name afc-web-dev --resource-group rg-afc-dev \
-            --environment-name "$environment_name" --query defaultHostname --output tsv)"
-          echo "static_web_app_url=https://$host" >> "$GITHUB_OUTPUT"
+              --env "$environment_name" --no-use-keychain 2>&1 | tee /dev/stderr |
+              sed -n 's/.*Project deployed to \(https:\/\/[^ ]*\).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "static_web_app_url=$preview_url" >> "$GITHUB_OUTPUT"
       - name: Install browser dependencies
         run: |
           npm ci
