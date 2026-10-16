@@ -13,7 +13,7 @@ public static class FixtureSelector
             .OrderBy(fixture => fixture.KickoffUtc)
             .FirstOrDefault()
             ?? fixtures
-                .Where(fixture => fixture.Status == FixtureStatus.Scheduled)
+                .Where(fixture => fixture.Status == FixtureStatus.Scheduled && fixture.KickoffUtc >= nowUtc)
                 .OrderBy(fixture => fixture.KickoffUtc)
                 .FirstOrDefault();
     }
