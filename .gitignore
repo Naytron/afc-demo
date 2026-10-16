@@ -44,3 +44,6 @@ Thumbs.db
 .env.*
 !.env.example
 src/afc-web/wwwroot/appsettings.Production.json
+
+# ---- Aspire local state ----
+src/afc-apphost/aspire.config.json
