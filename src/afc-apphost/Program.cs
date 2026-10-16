@@ -1,9 +1,9 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var api = builder.AddProject<Projects.Afc_Api>("api")
-    .WithHttpEndpoint(port: 5181);
+    .WithEndpoint("http", endpoint => endpoint.Port = 5181);
 builder.AddProject<Projects.Afc_Web_Host>("web")
-    .WithHttpEndpoint(port: 5182)
+    .WithEndpoint("http", endpoint => endpoint.Port = 5182)
     .WithReference(api)
     .WaitFor(api);
 
